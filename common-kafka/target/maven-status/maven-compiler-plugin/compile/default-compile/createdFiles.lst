@@ -1,0 +1,6 @@
+br\com\alce\Configs.class
+br\com\alce\KafkaDispatcher.class
+br\com\alce\KafkaListener.class
+br\com\alce\GsonDeserializer.class
+br\com\alce\GsonSerializer.class
+br\com\alce\ConsumerFunction.class
