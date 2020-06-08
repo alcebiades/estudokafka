@@ -28,6 +28,11 @@ public class KafkaDispatcher<T> implements Closeable {
         properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         // Define o serializador para o corpo da mensagem
         properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GsonSerializer.class.getName());
+        // Define o tipo de acknowledge que será usado na postagem da mensagem:
+        // "0" (zero) o produtor nao espera que o broker confirme o recebimento da mensagem.
+        // "1" o produtor espera apenas que o leader do cluster responda que a mensagem foi recebida.
+        // "all" o produtor espera que o leader e suas replicar recebam a mensagem, ou seja, que eles estejam in-sync.
+        properties.setProperty(ProducerConfig.ACKS_CONFIG, "all");
         return properties;
     }
 

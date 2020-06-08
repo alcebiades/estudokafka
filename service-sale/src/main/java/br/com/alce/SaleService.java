@@ -1,32 +1,26 @@
 package br.com.alce;
 
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class SaleService {
 
-    public static void main(String[] args) throws ExecutionException, InterruptedException {
+    public static void main(String[] args) throws Exception {
 
-        try (var orderDispatcher = new KafkaDispatcher<Sale>()) {
-            try (var emailDispatcher = new KafkaDispatcher<String>()) {
+        var server = new Server(8888);
 
-                for (int i = 0; i < 10; i++) {
+        var context = new ServletContextHandler();
+        context.setContextPath("/");
+        context.addServlet(new ServletHolder(new SaleServlet()), "/sale");
 
-                    // Eh sempre interessante postar uma mensagem com uma Key para garantir que elas sejam lidas em sequencia,
-                    // desta maneira o kafka tem um algoritimo que coloca as mensagens de mesma key sempre na mesma particao e
-                    // isso garante que sempre o mesmo consumidor leia as mensagens em sequencia.
-                    final var userId = UUID.randomUUID().toString();
-                    final var saleId = UUID.randomUUID().toString();
-                    final var amount = Math.random() * 5000 + 1;
+        server.setHandler(context);
 
-                    final Sale sale = new Sale(userId, saleId, new BigDecimal(amount));
-                    orderDispatcher.send(Configs.SALE_TOPIC_NAME, userId, sale);
-
-                    final String email = "EMAIL - " + i + " - Sua compra foi processada com sucesso! O valor total e de: R$ " + sale.getAmount();
-                    emailDispatcher.send(Configs.EMAIL_TOPIC_NAME, userId, email);
-                }
-            }
-        }
+        server.start();
+        server.join();
     }
 }
